@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound(){return <section className="section"><div className="narrow stack"><span className="eyebrow">404 · Page not found</span><h1>This trail ends here.</h1><p className="lede">The page may have moved, remained a draft, or never existed.</p><div className="cluster"><Link className="btn" href="/">Return home</Link><Link className="btn secondary" href="/publications">Browse the work</Link></div></div></section>}

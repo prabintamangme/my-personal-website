@@ -1,0 +1,13 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {title: "Privacy Policy", description: "How LEARNINGEVERGROW handles contact and subscription information."};
+
+export default function PrivacyPage() {
+  return <><section className="page-hero"><div className="shell stack"><span className="eyebrow">Privacy Policy</span><h1>Your choices matter.</h1><p className="lede">This page explains what the site collects, why it is needed, and how to ask for changes or removal.</p></div></section>
+  <section className="section"><div className="narrow stack" style={{gap: "2rem"}}>
+    <section className="stack"><h2 style={{fontSize: "2rem"}}>Newsletter subscriptions</h2><p>The subscription form collects your name and email address. A phone number is optional and is only needed if you separately choose phone updates. Email consent is required and phone messaging consent, when that feature is configured, is separate and optional.</p><p>Email subscriptions use double opt-in. You are not treated as subscribed until the email provider confirms your address. The configured provider stores and processes subscription details so it can deliver the updates you selected and, when available, a link to the learning guide.</p></section>
+    <section className="stack"><h2 style={{fontSize: "2rem"}}>Contact enquiries</h2><p>The contact form stores your name, email address, subject, and message so Prabin can review and reply. A privacy-preserving hash of connection information is retained for rate limiting. Sending a contact enquiry does not add you to the newsletter.</p></section>
+    <section className="stack"><h2 style={{fontSize: "2rem"}}>Your choices</h2><p>You can unsubscribe from email updates at any time by using the link in an email. You can also ask to access, correct, or delete your information by emailing <a className="rule-link" href="mailto:prabintamangme@gmail.com">prabintamangme@gmail.com</a>.</p><p>The site does not send SMS or WhatsApp updates without separate permission and a configured messaging service.</p></section>
+    <section className="stack"><h2 style={{fontSize: "2rem"}}>Security and updates</h2><p>Administrative access is restricted, and public forms validate requests before storing them. No internet service can promise absolute security. This policy should be updated whenever providers, retention practices, or site features change.</p><p className="muted">Last updated: 9 November 2026.</p></section>
+  </div></section></>;
+}

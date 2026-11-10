@@ -1,0 +1,13 @@
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import type { LearningPath } from "@/lib/types";
+export function LearningLibrary({ paths }: { paths: LearningPath[] }) {
+  const [done,setDone]=useState<string[]>([]); const [query,setQuery]=useState(""); const [topic,setTopic]=useState("All");
+  useEffect(()=>{const frame=requestAnimationFrame(()=>{try{setDone(JSON.parse(localStorage.getItem("leg-progress")??"[]"))}catch{}});return()=>cancelAnimationFrame(frame)},[]);
+  function toggle(id:string){const next=done.includes(id)?done.filter(x=>x!==id):[...done,id];setDone(next);localStorage.setItem("leg-progress",JSON.stringify(next));}
+  const visible=useMemo(()=>paths.filter(p=>(topic==="All"||p.topic===topic)&&`${p.title} ${p.description} ${p.lessons.map(l=>l.title).join(" ")}`.toLowerCase().includes(query.toLowerCase())),[paths,query,topic]);
+  return <div className="stack" style={{gap:"2rem"}}><div className="filters" style={{gridTemplateColumns:"2fr 1fr"}}><div className="field"><label htmlFor="learn-search">Search learning resources</label><input className="input" id="learn-search" type="search" value={query} onChange={e=>setQuery(e.target.value)} /></div><div className="field"><label htmlFor="learn-topic">Topic</label><select className="input" id="learn-topic" value={topic} onChange={e=>setTopic(e.target.value)}><option>All</option>{Array.from(new Set(paths.map(p=>p.topic))).map(x=><option key={x}>{x}</option>)}</select></div></div>
+    <div className="form-status">Progress is stored only in this browser on this device. It is not an account and does not synchronize. <button className="rule-link" onClick={()=>{setDone([]);localStorage.removeItem("leg-progress")}}>Reset progress</button></div>
+    {visible.map(path=><article className="card learning-card" key={path.id}><div className="cluster"><span className="pill">{path.topic}</span><span className="pill">{path.difficulty}</span>{path.demo&&<span className="pill demo">Demonstration</span>}</div><h3>{path.title}</h3><p className="muted">{path.description}</p><div className="lesson-list">{path.lessons.map((lesson,index)=><div className="lesson" key={lesson.id}><div className={done.includes(lesson.id)?"done":""}><strong>{lesson.title}</strong><p className="muted">{lesson.summary}</p>{index>0&&<span className="meta">Previous: {path.lessons[index-1].title}</span>}{index<path.lessons.length-1&&<span className="meta">Next: {path.lessons[index+1].title}</span>}</div><button className="btn secondary small" onClick={()=>toggle(lesson.id)} aria-pressed={done.includes(lesson.id)}>{done.includes(lesson.id)?"Completed":"Mark complete"}</button></div>)}</div></article>)}
+  </div>;
+}

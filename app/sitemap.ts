@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next"; import { getPublishedContent } from "@/lib/data";
+export default async function sitemap():Promise<MetadataRoute.Sitemap>{const base=process.env.NEXT_PUBLIC_SITE_URL??"https://learningevergrow.example";const pages=["","/about","/services","/contact","/publications","/learning","/newsletter","/privacy"];const work=(await getPublishedContent()).filter(x=>!x.demo).map(x=>({url:`${base}/work/${x.slug}`,lastModified:new Date(x.updatedAt)}));return [...pages.map(path=>({url:`${base}${path}`,lastModified:new Date()})),...work]}

@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "runtime-bindings": [
+        "./lib/runtime-bindings.ts"
       ]
     },
     "types": [
@@ -44,6 +47,7 @@
     "node_modules",
     "examples",
     "dist",
+    ".next-vercel-test",
     ".vinext",
     ".wrangler",
     ".sites-runtime",

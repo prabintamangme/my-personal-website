@@ -1,4 +1,4 @@
-/** Public-page-only shim for LOCAL_NODE_PREVIEW=1. Production uses real bindings. */
+/** Node/Vercel fallback. Cloudflare deployments use the real D1 and R2 bindings. */
 export const env = {
   DB: undefined,
   BUCKET: undefined,

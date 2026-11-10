@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "runtime-bindings";
 import { demoContent } from "./site-data";
 import type { ContentItem, ContentType } from "./types";
 

@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://learningevergrow.example";
+const baseUrl = siteUrl;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

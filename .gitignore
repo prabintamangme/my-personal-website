@@ -12,6 +12,9 @@
 # Generated builds and framework state
 /dist/
 /.next/
+/.next-vercel-test/
+/.vercel-cli-cache/
+/.vercel/
 /.vinext/
 /out/
 next-env.d.ts
@@ -45,3 +48,5 @@ yarn-error.log*
 
 # OS metadata
 .DS_Store
+
+.vercel

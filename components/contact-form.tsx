@@ -3,6 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 
 type Errors = Partial<Record<"name" | "email" | "subject" | "message", string>>;
+const formSubmitEndpoint = "https://formsubmit.co/ajax/prabintamangme@gmail.com";
 
 export function ContactForm() {
   const started = useRef<number | null>(null);
@@ -17,6 +18,7 @@ export function ContactForm() {
     const email = String(data.get("email") ?? "").trim();
     const subject = String(data.get("subject") ?? "").trim();
     const message = String(data.get("message") ?? "").trim();
+    const website = String(data.get("website") ?? "").trim();
     const next: Errors = {};
     if (name.length < 2) next.name = "Enter your name.";
     if (!/^\S+@\S+\.\S+$/.test(email)) next.email = "Enter a valid email address.";
@@ -24,13 +26,33 @@ export function ContactForm() {
     if (message.length < 20) next.message = "Tell me a little more—use at least 20 characters.";
     setErrors(next);
     if (Object.keys(next).length) return;
+    if (website) return;
     setPending(true); setStatus(null);
-    const payload = {...Object.fromEntries(data), enquiryType: "General enquiry", startedAt: started.current ?? 0};
     try {
-      const response = await fetch("/api/contact", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify(payload)});
-      const result = await response.json() as {message: string};
-      setStatus({kind: response.ok ? "success" : "error", message: result.message});
-      if (response.ok) { form.reset(); started.current = null; }
+      const response = await fetch(formSubmitEndpoint, {
+        method: "POST",
+        headers: {"content-type": "application/json", accept: "application/json"},
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message,
+          _replyto: email,
+          _subject: `New LEARNINGEVERGROW enquiry: ${subject}`,
+          _template: "table",
+          _honey: website,
+          _url: "https://prabintamang7.com.np/contact",
+        }),
+      });
+      const result = await response.json().catch(() => ({})) as {success?: boolean | string; message?: string};
+      const accepted = response.ok && result.success !== false && result.success !== "false";
+      setStatus({
+        kind: accepted ? "success" : "error",
+        message: accepted
+          ? "Your message has been sent. Thank you—I’ll reply using the email you provided."
+          : result.message ?? "Your message could not be sent. Please try again or email directly.",
+      });
+      if (accepted) { form.reset(); started.current = null; }
     } catch { setStatus({kind: "error", message: "The network request failed. Your message was not sent. Please try again or email directly."}); }
     finally { setPending(false); }
   }
@@ -43,6 +65,7 @@ export function ContactForm() {
     <div className="field"><label htmlFor="contact-subject">Subject</label><input className="input" id="contact-subject" name="subject" required maxLength={160} aria-invalid={Boolean(errors.subject)} aria-describedby={errors.subject ? "contact-subject-error" : undefined} />{errors.subject && <span className="form-error" id="contact-subject-error">{errors.subject}</span>}</div>
     <div className="field"><label htmlFor="contact-message">Message</label><textarea className="input" id="contact-message" name="message" required minLength={20} maxLength={5000} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? "contact-message-error" : undefined} />{errors.message && <span className="form-error" id="contact-message-error">{errors.message}</span>}</div>
     <button className="btn accent" disabled={pending}>{pending ? "Sending…" : "Send Message"}</button>
+    <p className="muted" style={{fontSize: ".82rem"}}>Your message will be emailed to prabintamangme@gmail.com. You will remain on this website after submitting.</p>
     {status && <div className={`form-status ${status.kind}`} role="status">{status.message}</div>}
   </form>;
 }

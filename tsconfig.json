@@ -48,6 +48,8 @@
     "examples",
     "dist",
     ".next-vercel-test",
+    ".vercel",
+    ".vercel-cli-cache",
     ".vinext",
     ".wrangler",
     ".sites-runtime",

@@ -5,10 +5,10 @@ import { FormEvent, useState } from "react";
 import { freePdf, phoneUpdatesAvailable } from "@/lib/subscription";
 
 type FormErrors = Partial<Record<"name" | "email" | "phone" | "consent", string>>;
-type Result = { message: string; detail?: string; stage?: "check_inbox" | "ready"; downloadUrl?: string };
+const formSubmitEndpoint = "https://formsubmit.co/ajax/prabintamangme@gmail.com";
 
 export function NewsletterForm({ compact = false }: { compact?: boolean }) {
-  const [status, setStatus] = useState<({ kind: "success" | "error" } & Result) | null>(null);
+  const [status, setStatus] = useState<{kind: "success" | "error"; message: string} | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [pending, setPending] = useState(false);
   const prefix = compact ? "newsletter-compact" : "newsletter";
@@ -21,36 +21,53 @@ export function NewsletterForm({ compact = false }: { compact?: boolean }) {
     const name = String(data.get("name") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
     const phone = String(data.get("phone") ?? "").trim();
+    const phoneCountryCode = String(data.get("phoneCountryCode") ?? "+977");
     const emailConsent = data.get("emailConsent") === "on";
     const messagingConsent = data.get("messagingConsent") === "on";
+    const website = String(data.get("website") ?? "").trim();
     if (name.length < 2) nextErrors.name = "Enter your name.";
     if (!/^\S+@\S+\.\S+$/.test(email)) nextErrors.email = "Enter a valid email address.";
     if (!emailConsent) nextErrors.consent = "You must agree to receive email updates before subscribing.";
     if (messagingConsent && !phone) nextErrors.phone = "Enter a phone number to request phone updates.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
+    if (website) return;
 
     setPending(true); setStatus(null);
     try {
-      const response = await fetch("/api/newsletter", {
+      const response = await fetch(formSubmitEndpoint, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {"content-type": "application/json", accept: "application/json"},
         body: JSON.stringify({
-          name, email, phone,
-          phoneCountryCode: String(data.get("phoneCountryCode") ?? "+977"),
-          emailConsent,
-          messagingConsent,
+          name,
+          email,
+          phone: phone ? `${phoneCountryCode} ${phone}` : "Not provided",
+          emailConsent: emailConsent ? "Agreed to receive learning resources and email updates" : "Not agreed",
+          messagingConsent: messagingConsent ? "Agreed to SMS or WhatsApp updates" : "Not requested",
+          requestType: "LEARNINGEVERGROW subscription request",
+          _replyto: email,
+          _subject: `New LEARNINGEVERGROW subscription: ${name}`,
+          _template: "table",
+          _honey: website,
+          _url: "https://www.prabintamang7.com.np/newsletter",
         }),
       });
-      const result = await response.json() as Result;
-      setStatus({ kind: response.ok ? "success" : "error", ...result });
-      if (response.ok && result.stage === "check_inbox") form.reset();
+      const result = await response.json().catch(() => ({})) as {success?: boolean | string; message?: string};
+      const accepted = response.ok && result.success !== false && result.success !== "false";
+      setStatus({
+        kind: accepted ? "success" : "error",
+        message: accepted
+          ? "Your subscription request has been sent. Thank you—LEARNINGEVERGROW has received your details for future email updates."
+          : result.message ?? "Your subscription request could not be sent. Please try again or email directly.",
+      });
+      if (accepted) form.reset();
     } catch {
-      setStatus({ kind: "error", message: "The network request failed.", detail: "Your subscription was not confirmed. Check your connection and try again." });
+      setStatus({kind: "error", message: "The network request failed. Your subscription request was not sent. Check your connection and try again."});
     } finally { setPending(false); }
   }
 
   return <form className="form" onSubmit={submit} noValidate>
+    <div className="honeypot" aria-hidden="true"><label>Company website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
     <div className="stack" style={{gap: ".45rem"}}>
       <h3>{freePdf ? "Subscribe and get your free learning guide." : "Subscribe for learning updates."}</h3>
       <p className="muted">{freePdf ? <>Enter your details to receive new learning content and access <strong>{freePdf.title}</strong>.</> : "Enter your details to receive new articles and learning resources from LEARNINGEVERGROW."}</p>
@@ -64,7 +81,7 @@ export function NewsletterForm({ compact = false }: { compact?: boolean }) {
     {errors.consent && <span className="form-error" id={`${prefix}-consent-error`}>{errors.consent}</span>}
     {phoneUpdatesAvailable && <label className="consent"><input type="checkbox" name="messagingConsent" /><span>I would also like learning updates by SMS or WhatsApp.</span></label>}
     <button className="btn accent" disabled={pending}>{pending ? "Sending…" : freePdf ? "Send Me the Free PDF" : "Subscribe for Updates"}</button>
-    <p className="muted" style={{fontSize: ".82rem"}}>Your details will be used for the updates you choose, as explained in our <Link className="rule-link" href="/privacy">Privacy Policy</Link>. You can unsubscribe at any time.</p>
-    {status && <div className={`form-status ${status.kind}`} role="status"><strong>{status.stage === "check_inbox" ? "One more step: check your inbox." : status.stage === "ready" ? "You’re subscribed. Your guide is ready." : status.message}</strong>{status.detail && <p>{status.detail}</p>}{status.stage === "ready" && status.downloadUrl && <a className="btn small" href={status.downloadUrl}>Download PDF</a>}</div>}
+    <p className="muted" style={{fontSize: ".82rem"}}>Your details will be emailed to LEARNINGEVERGROW and used for the updates you choose, as explained in our <Link className="rule-link" href="/privacy">Privacy Policy</Link>. You can unsubscribe at any time.</p>
+    {status && <div className={`form-status ${status.kind}`} role="status"><strong>{status.message}</strong></div>}
   </form>;
 }
